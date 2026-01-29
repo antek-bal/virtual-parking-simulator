@@ -2,7 +2,7 @@ class PriceCalculator:
     def __init__(self, prices: dict):
         self.prices = prices
 
-    def calculate_parking_fee(self, minutes: int, floor: int) -> float:
+    def calculate_fee(self, minutes: int, floor: int) -> float:
         if not isinstance(minutes, int):
             raise TypeError("Minutes must be an integer")
 
