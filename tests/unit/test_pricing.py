@@ -1,6 +1,7 @@
 import pytest
 from app.services.pricing import PriceCalculator
 
+
 class TestPriceCalculator:
     def test_free_thirty_minutes(self, price_calculator):
         for i in range(5):
@@ -24,6 +25,3 @@ class TestPriceCalculator:
     def test_minutes_not_int(self, price_calculator):
         with pytest.raises(TypeError):
             price_calculator.calculate_fee("30", 0)
-
-
-
