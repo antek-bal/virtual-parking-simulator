@@ -1,13 +1,26 @@
-import requests
+class VehicleValidator:
+    def __init__(self, basic_letters: list, special_letters: list):
+        self.basic_letters = basic_letters
+        self.special_letters = special_letters
 
-class VehicleValidator()
-    def __init__(self, URL):
-        self.URL = "https://api.cepik.gov.pl/pojazdy"
-
-    def validate(self, country_abbreviation, registration_no):
+    def validate(self, country_abbreviation: str, registration_no: str) -> bool:
         if country_abbreviation != "PL":
             return True
 
-        response = requests.get(f"{self.URL}/{registration_no}")
+        if not registration_no or not isinstance(registration_no, str):
+            return False
+
+        first_letter = registration_no[0]
+
+        if first_letter in self.basic_letters:
+            return 5 <= len(registration_no) <= 8
+
+        if first_letter in self.special_letters:
+            return len(registration_no) >= 6
+
+        return False
+
+
+
 
 
