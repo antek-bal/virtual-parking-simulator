@@ -42,3 +42,14 @@ class TestParkingManager:
         assert data["registration_no"] == "GD5P227"
         assert data["fee"] == 3.0
         assert data["minutes"] == 90
+
+    def test_exit_invalid_registration(self, parking_manager):
+        with pytest.raises(ValueError):
+            parking_manager.register_exit("GD5P227")
+
+    def test_exit_success(self, parking_manager):
+        parking_manager.register_entry("PL", "GD5P227", 0)
+
+        assert parking_manager.register_exit("GD5P227") == True
+        assert len(parking_manager.active_parkings) == 0
+
