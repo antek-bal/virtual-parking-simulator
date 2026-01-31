@@ -38,7 +38,7 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
       run: |
-        python3 -m coverage run -p --source=src -m pytest src/tests/unit/
+        python3 -m coverage run -p --source=src -m pytest tests/unit/
 
     - name: Start FastAPI Server
       run: |
@@ -48,7 +48,7 @@ jobs:
         
     - name: Run API Tests
       run: |
-        pytest src/tests/api/
+        pytest tests/api/
 
     - name: Run BDD Tests
       run: |
