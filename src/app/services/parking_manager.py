@@ -55,7 +55,7 @@ class ParkingManager:
         required_fee = payment_info["fee"]
 
         if amount < required_fee:
-            raise ValueError("Insufficient funds")
+            raise ValueError("Insufficient amount")
 
         vehicle_id = f"{country}_{registration_no}"
 

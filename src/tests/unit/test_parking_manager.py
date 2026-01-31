@@ -66,6 +66,20 @@ class TestParkingManager:
         assert res["fee"] == 6.0
         assert res["payment_time"] == payment_time
 
+    def test_pay_parking_fee_insufficient_amount(self, parking_manager, mocker):
+        entry_time = datetime(2026, 1, 1, 10, 00, 00)
+
+        mock_datetime = mocker.patch('src.app.services.parking_manager.datetime')
+        mock_datetime.now.return_value = entry_time
+
+        parking_manager.register_entry("PL", "GD5P227", 0)
+
+        payment_time = datetime(2026, 1, 1, 11, 30, 00)
+
+        mock_datetime.now.return_value = payment_time
+
+        with pytest.raises(ValueError):
+            parking_manager.pay_parking_fee("PL", "GD5P227", 1.0)
 
     def test_exit_invalid_registration(self, parking_manager):
         with pytest.raises(ValueError):
