@@ -66,7 +66,7 @@ def test_update_floor_invalid_floor():
         "new_floor": 5
     }
 
-    response = requests.patch(f"{BASE_URL}/entry/{payload["registration_no"]}", json=payload_updated)
+    response = requests.patch(f"{BASE_URL}/entry/{payload['registration_no']}", json=payload_updated)
 
     assert response.status_code == 422
 
