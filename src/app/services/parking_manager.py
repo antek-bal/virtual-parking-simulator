@@ -1,6 +1,6 @@
 from collections import defaultdict
 from typing import Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timedelta
 from src.app.services.pricing import PriceCalculator
 from src.app.services.validator import VehicleValidator
 
@@ -30,7 +30,9 @@ class ParkingManager:
         self.active_parkings[vehicle_id] = {
             "entry_time": datetime.now(),
             "floor": floor,
-            "is_paid": False
+            "is_paid": False,
+            "payment_time": None,
+            "paid_fee": None
         }
         return True
 
@@ -52,36 +54,42 @@ class ParkingManager:
         payment_info = self.get_payment_info(country, registration_no)
         required_fee = payment_info["fee"]
 
-        if amount < payment_info["fee"]:
-            raise ValueError(f"Insufficient amount. Required: {required_fee} PLN")
-
-        change = round(amount - required_fee, 2)
+        if amount < required_fee:
+            raise ValueError("Insufficient funds")
 
         vehicle_id = f"{country}_{registration_no}"
+
         self.active_parkings[vehicle_id]["is_paid"] = True
+        self.active_parkings[vehicle_id]["payment_time"] = datetime.now()
+        self.active_parkings[vehicle_id]["paid_fee"] = required_fee
 
         return {
             "status": True,
-            "required_fee": required_fee,
-            "paid_amount": amount,
-            "change": change
+            "fee": required_fee,
+            "payment_time": datetime.now()
         }
 
 
     def register_exit(self, country: str, registration_no: str) -> bool:
         vehicle_id = f"{country}_{registration_no}"
-        fee = self.get_payment_info(country, registration_no)["fee"]
-        entry_time = self.active_parkings[vehicle_id]["entry_time"]
-        floor = self.active_parkings[vehicle_id]["floor"]
 
-        if not self.active_parkings[vehicle_id]["is_paid"]:
+        if vehicle_id not in self.active_parkings:
+            raise ValueError("Vehicle not found on parking")
+
+        entry_data = self.active_parkings[vehicle_id]
+
+        if not entry_data["is_paid"]:
             raise ValueError("Parking fee not paid")
 
+        time_since_pay = datetime.now() - entry_data["payment_time"]
+        if time_since_pay > timedelta(minutes=15):
+            raise ValueError("Payment expired. 15 minutes exceeded")
+
         self.history[vehicle_id].append({
-            "entry_time": entry_time,
+            "entry_time": entry_data["entry_time"],
             "exit_time": datetime.now(),
-            "floor": floor,
-            "fee": fee
+            "floor": entry_data["floor"],
+            "fee": entry_data["paid_fee"]
         })
 
         del self.active_parkings[vehicle_id]
