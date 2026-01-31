@@ -48,13 +48,24 @@ class ParkingManager:
 
         return {"country": country, "registration_no": registration_no, "fee": fee, "minutes": minutes}
 
-    def pay_parking_fee(self, country: str, registration_no: str) -> bool:
-        vehicle_id = f"{country}_{registration_no}"
-        if vehicle_id not in self.active_parkings:
-            raise ValueError("Vehicle not found on parking")
+    def pay_parking_fee(self, country: str, registration_no: str, amount: float) -> Dict[str, Any]:
+        payment_info = self.get_payment_info(country, registration_no)
+        required_fee = payment_info["fee"]
 
+        if amount < payment_info["fee"]:
+            raise ValueError(f"Insufficient amount. Required: {required_fee} PLN")
+
+        change = round(amount - required_fee, 2)
+
+        vehicle_id = f"{country}_{registration_no}"
         self.active_parkings[vehicle_id]["is_paid"] = True
-        return True
+
+        return {
+            "status": True,
+            "required_fee": required_fee,
+            "paid_amount": amount,
+            "change": change
+        }
 
 
     def register_exit(self, country: str, registration_no: str) -> bool:
