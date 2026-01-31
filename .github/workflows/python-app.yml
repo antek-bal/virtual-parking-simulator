@@ -38,11 +38,16 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}/src
       run: |
-        python3 -m coverage run --source=src -m pytest src/tests/unit/
+        python3 -m coverage run -p --source=src -m pytest src/tests/unit/
         
-        python3 -m uvicorn app.main:app --app-dir src & 
+        python3 -m coverage run -p --source=src -m uvicorn app.main:app --app-dir src &
+        SERVER_PID=$!
         sleep 5
         
-        python3 -m coverage run -a --source=src -m pytest tests/api/
+        pytest tests/api/
         
+        kill -SIGINT $SERVER_PID
+        sleep 2
+        
+        python3 -m coverage combine
         python3 -m coverage report --fail-under=100

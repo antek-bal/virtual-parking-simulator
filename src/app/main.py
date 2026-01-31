@@ -31,8 +31,15 @@ def update_floor(registration_no: str, update_data: UpdateFloorRequest):
     if registration_no not in manager.active_parkings:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
-    manager.change_vehicle_floor(registration_no, update_data.floor)
-    return {"status": True, "registration_no": registration_no, "new_floor": update_data.new_floor}
+    try:
+        manager.change_vehicle_floor(registration_no, update_data.new_floor)
+        return {
+            "status": True,
+            "registration_no": registration_no,
+            "new_floor": update_data.new_floor
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.delete("/entry/{registration_no}")
