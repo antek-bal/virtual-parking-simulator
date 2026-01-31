@@ -40,7 +40,7 @@ class TestParkingManager:
         data = parking_manager.get_payment_info("GD5P227")
 
         assert data["registration_no"] == "GD5P227"
-        assert data["fee"] == 3.0
+        assert data["fee"] == 6.0
         assert data["minutes"] == 90
 
     def test_exit_invalid_registration(self, parking_manager):
@@ -52,4 +52,48 @@ class TestParkingManager:
 
         assert parking_manager.register_exit("GD5P227") == True
         assert len(parking_manager.active_parkings) == 0
+
+    def test_saving_to_history(self, parking_manager, mocker):
+        entry_time = datetime(2026, 1, 29, 10, 00, 00)
+
+        mock_datetime = mocker.patch('src.app.services.parking_manager.datetime')
+        mock_datetime.now.return_value = entry_time
+
+        parking_manager.register_entry("PL", "GD5P227", 3)
+
+        exit_time = datetime(2026, 1, 29, 11, 30, 00)
+
+        mock_datetime.now.return_value = exit_time
+
+        parking_manager.register_exit("GD5P227")
+
+        assert parking_manager.history["GD5P227"][0]["entry_time"] == entry_time
+        assert parking_manager.history["GD5P227"][0]["exit_time"] == exit_time
+        assert parking_manager.history["GD5P227"][0]["floor"] == 3
+        assert parking_manager.history["GD5P227"][0]["fee"] == 3.0
+
+    def test_multiple_parkings_in_history(self, parking_manager):
+        parking_manager.register_entry("PL", "GD5P227", 0)
+        parking_manager.register_exit("GD5P227")
+
+        parking_manager.register_entry("PL", "GD5P227", 1)
+        parking_manager.register_exit("GD5P227")
+
+        assert len(parking_manager.history["GD5P227"]) == 2
+
+    def test_change_floor_invalid_registration(self, parking_manager):
+        with pytest.raises(ValueError):
+            parking_manager.change_vehicle_floor("GD5P227", 0)
+
+    def test_change_floor_invalid_floor(self, parking_manager):
+        parking_manager.register_entry("PL", "GD5P227", 0)
+        with pytest.raises(ValueError):
+            parking_manager.change_vehicle_floor("GD5P227", 5)
+
+    def test_change_floor_valid(self, parking_manager):
+        parking_manager.register_entry("PL", "GD5P227", 0)
+
+        assert parking_manager.change_vehicle_floor("GD5P227", 1) == True
+        assert parking_manager.active_parkings["GD5P227"]["floor"] == 1
+
 
