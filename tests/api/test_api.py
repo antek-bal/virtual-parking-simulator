@@ -50,7 +50,15 @@ def test_register_vehicle_entry_invalid_data():
 
 
 def test_update_floor_invalid_registration():
-    requests.patch(f"{BASE_URL}/entry/PL/GD5P227", json={"floor": 0})
+    response = requests.patch(
+        f"{BASE_URL}/entry/PL/GD12",
+        json={"new_floor": 2}
+    )
+
+    assert response.status_code == 404
+
+    data = response.json()
+    assert data["detail"] == "Vehicle not found"
 
 
 def test_update_floor_invalid_floor():
