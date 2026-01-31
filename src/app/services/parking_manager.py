@@ -29,7 +29,8 @@ class ParkingManager:
 
         self.active_parkings[vehicle_id] = {
             "entry_time": datetime.now(),
-            "floor": floor
+            "floor": floor,
+            "is_paid": False
         }
         return True
 
@@ -47,11 +48,23 @@ class ParkingManager:
 
         return {"country": country, "registration_no": registration_no, "fee": fee, "minutes": minutes}
 
+    def pay_parking_fee(self, country: str, registration_no: str) -> bool:
+        vehicle_id = f"{country}_{registration_no}"
+        if vehicle_id not in self.active_parkings:
+            raise ValueError("Vehicle not found on parking")
+
+        self.active_parkings[vehicle_id]["is_paid"] = True
+        return True
+
+
     def register_exit(self, country: str, registration_no: str) -> bool:
         vehicle_id = f"{country}_{registration_no}"
         fee = self.get_payment_info(country, registration_no)["fee"]
         entry_time = self.active_parkings[vehicle_id]["entry_time"]
         floor = self.active_parkings[vehicle_id]["floor"]
+
+        if not self.active_parkings[vehicle_id]["is_paid"]:
+            raise ValueError("Parking fee not paid")
 
         self.history[vehicle_id].append({
             "entry_time": entry_time,
